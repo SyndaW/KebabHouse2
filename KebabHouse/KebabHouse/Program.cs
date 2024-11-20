@@ -22,17 +22,24 @@ namespace KebabHouse
 
             int choice = 0;
             bool validChoice = false;
+
+            // Robustní validace vstupu
             while (!validChoice)
             {
                 Console.Write("Zadejte číslo menu (1-7): ");
-                validChoice = int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= 7;
-                if (!validChoice)
+                string? input = Console.ReadLine();
+
+                if (!int.TryParse(input, out choice) || choice < 1 || choice > 7)
                 {
                     Console.WriteLine("Neplatná volba, zadejte číslo mezi 1 a 7.");
                 }
+                else
+                {
+                    validChoice = true;
+                }
             }
 
-            Kebab selectedKebab = null;
+            Kebab? selectedKebab = null;
 
             // Vybereme Kebab podle čísla menu
             switch (choice)
@@ -55,30 +62,40 @@ namespace KebabHouse
                 case 6:
                     // Zobrazí aktuální stav zásob
                     Console.WriteLine($"Aktuální zásoby - Maso: {sklad.Meat}g, Salát: {sklad.Salad}g, Omáčka: {sklad.Sauce}g");
-                    return;
+                    return;  // Předčasně ukončí program
                 case 7:
                     // Doplňování zásob
                     Console.WriteLine("Zadejte množství masa, salátu a omáčky pro doplnění zásob:");
-                    Console.Write("Maso (g): ");
-                    int meatAdd = int.Parse(Console.ReadLine());
-                    Console.Write("Salát (g): ");
-                    int saladAdd = int.Parse(Console.ReadLine());
-                    Console.Write("Omáčka (g): ");
-                    int sauceAdd = int.Parse(Console.ReadLine());
+                    try
+                    {
+                        Console.Write("Maso (g): ");
+                        int meatAdd = int.Parse(Console.ReadLine() ?? "0");  // Bezpečně ošetří prázdný vstup
+                        Console.Write("Salát (g): ");
+                        int saladAdd = int.Parse(Console.ReadLine() ?? "0");
+                        Console.Write("Omáčka (g): ");
+                        int sauceAdd = int.Parse(Console.ReadLine() ?? "0");
 
-                    sklad.Restock(meatAdd, saladAdd, sauceAdd);
-                    Console.WriteLine($"Zásoby byly doplněny! Maso: {meatAdd}g, Salát: {saladAdd}g, Omáčka: {sauceAdd}g");
-                    return;
+                        sklad.Restock(meatAdd, saladAdd, sauceAdd);
+                        Console.WriteLine($"Zásoby byly doplněny! Maso: {meatAdd}g, Salát: {saladAdd}g, Omáčka: {sauceAdd}g");
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Neplatný formát. Ujistěte se, že zadáváte čísla.");
+                    }
+                    return;  // Předčasně ukončí program
             }
 
             // Kontrola, zda jsou na skladě dostatečné zásoby
-            if (sklad.Meat >= selectedKebab.Meat && sklad.Salad >= selectedKebab.Salad && sklad.Sauce >= selectedKebab.Sauce)
+            if (selectedKebab != null &&
+                sklad.Meat >= selectedKebab.Meat &&
+                sklad.Salad >= selectedKebab.Salad &&
+                sklad.Sauce >= selectedKebab.Sauce)
             {
                 // Odbavení objednávky
                 sklad.Consume(selectedKebab);
                 Console.WriteLine($"Objednávka byla přijata! Kebab '{selectedKebab.Name}' s {selectedKebab.Meat}g masa, {selectedKebab.Salad}g salátu a {selectedKebab.Sauce}g omáčky.");
             }
-            else
+            else if (selectedKebab != null)
             {
                 Console.WriteLine("Není dostatek zásob pro tuto objednávku.");
             }
