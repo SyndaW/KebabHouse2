@@ -1,10 +1,10 @@
 ﻿namespace KebabHouse
 {
-    public class Sklad
+    class Sklad
     {
-        public int Meat { get; set; }
-        public int Salad { get; set; }
-        public int Sauce { get; set; }
+        public int Meat { get; private set; }
+        public int Salad { get; private set; }
+        public int Sauce { get; private set; }
 
         public Sklad(int meat, int salad, int sauce)
         {
@@ -13,20 +13,24 @@
             Sauce = sauce;
         }
 
-        // Funkce pro kontrolu zásob a odbavení objednávky
         public void Consume(Kebab kebab)
         {
+            if (Meat < kebab.Meat || Salad < kebab.Salad || Sauce < kebab.Sauce)
+                throw new InvalidOperationException("Nedostatek zásob.");
+
             Meat -= kebab.Meat;
             Salad -= kebab.Salad;
             Sauce -= kebab.Sauce;
         }
 
-        // Funkce pro doplnění zásob
-        public void Restock(int meatAdd, int saladAdd, int sauceAdd)
+        public void Restock(int meat, int salad, int sauce)
         {
-            Meat += meatAdd;
-            Salad += saladAdd;
-            Sauce += sauceAdd;
+            if (meat < 0 || salad < 0 || sauce < 0)
+                throw new ArgumentException("Zadané množství musí být nezáporné.");
+
+            Meat += meat;
+            Salad += salad;
+            Sauce += sauce;
         }
     }
 }
